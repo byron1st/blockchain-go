@@ -1,6 +1,9 @@
 package blockchain
 
-import "net/url"
+import (
+	"net/url"
+	"time"
+)
 
 type transaction struct {
 	sender    string
@@ -10,7 +13,7 @@ type transaction struct {
 
 type block struct {
 	index        int
-	timestamp    float64
+	timestamp    int64
 	transactions []transaction
 	proof        int
 	previousHash string
@@ -22,26 +25,43 @@ type blockchain struct {
 	nodes               map[string]bool
 }
 
-func makeBlockchain() *blockchain {
-	newBlockchain := new(blockchain)
-	newBlockchain.currentTransactions = []transaction{}
-	newBlockchain.chain = []block{}
-	newBlockchain.nodes = make(map[string]bool)
-	return newBlockchain
+func MakeBlockchain() *blockchain {
+	blockchain := blockchain{
+		[]transaction{},
+		[]block{},
+		make(map[string]bool),
+	}
+
+	blockchain.CreateNewBlock("1", 100)
+	return &blockchain
 }
 
 func (blockchain *blockchain) getLastBlock() *block {
 	return &blockchain.chain[len(blockchain.chain)-1]
 }
 
-func (blockchain *blockchain) registerNode(urlAddress string) {
+func (blockchain *blockchain) RegisterNode(urlAddress string) {
 	parsedURL, _ := url.Parse(urlAddress)
 	blockchain.nodes[parsedURL.Host] = true
 }
 
-func (blockchain *blockchain) createNewTransaction(sender string, recipient string, amount int) int {
+func (blockchain *blockchain) CreateNewTransaction(sender string, recipient string, amount int) int {
 	transaction := transaction{sender, recipient, amount}
 	blockchain.currentTransactions = append(blockchain.currentTransactions, transaction)
 
 	return blockchain.getLastBlock().index + 1
+}
+
+func (blockchain *blockchain) CreateNewBlock(previousHash string, proof int) *block {
+	block := block{
+		len(blockchain.chain) + 1,
+		time.Now().Unix(),
+		blockchain.currentTransactions,
+		proof,
+		previousHash, // TODO: previousHash 값이 없을 경우, 앞 블록을 해싱.
+	}
+
+	blockchain.currentTransactions = []transaction{}
+	blockchain.chain = append(blockchain.chain, block)
+	return &block
 }
