@@ -20,7 +20,7 @@ func TestBlockchain_CreateNewTransaction(t *testing.T) {
 	bc.CreateNewTransaction("sender", "recipient", 30)
 
 	if len(bc.currentTransactions) != 1 {
-		t.Errorf("Current transaction is not 1, but %d", len(bc.currentTransactions))
+		t.Errorf("Current Transaction is not 1, but %d", len(bc.currentTransactions))
 	}
 
 	if bc.currentTransactions[0].sender != "sender" {
@@ -34,6 +34,10 @@ func TestBlockchain_CreateNewBlock(t *testing.T) {
 
 	if len(bc.chain) != 2 {
 		t.Errorf("Chain length is not 2, but %d", len(bc.chain))
+	}
+
+	if &bc.chain[1].transactions == &bc.currentTransactions {
+		t.Error("bc.chain[1].transactions == bc.currentTransactions.")
 	}
 
 	if len(bc.currentTransactions) != 0 {
